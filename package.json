@@ -1,6 +1,6 @@
 {
   "name": "moosegoose-cli-alerts-ts",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "CLI Alerts excercise in TypeScript.",
   "devDependencies": {
     "@types/jest": "~27.0.1",
