@@ -1,32 +1,27 @@
-/**
- * Some predefined delay values (in milliseconds).
- */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
+import * as chalk from "chalk";
+
+export type MessageType = 'success' | 'info' | 'warning' | 'error';
+
+export interface Options {
+  message: string;
+  messageType?: MessageType;
+  label?: string;
 }
 
-/**
- * Returns a Promise<string> that resolves after a given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - A number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
-}
+const defaultOptions: Options = {
+  message: 'Oops, forgot the message',
+  messageType: 'error'
+};
 
-// Below are examples of using ESLint errors suppression
-// Here it is suppressing a missing return type definition for the greeter function.
+type OutputFunc = (message: string) => void;
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function greeter(name: string) {
-  return await delayedHello(name, Delays.Long);
+export function alertMessage(options: Options, output: OutputFunc = console.log): void {
+  const { message, messageType, label } = { ...defaultOptions, ...options };
+  const colour = {
+    success: chalk.green,
+    info: chalk.blue,
+    warning: chalk.yellow,
+    error: chalk.red
+  }[messageType];
+  output(`${colour.inverse(` ${label || messageType.toUpperCase()} `)} ${message}`);
 }

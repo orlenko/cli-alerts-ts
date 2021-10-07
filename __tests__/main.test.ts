@@ -1,42 +1,48 @@
-import { Delays, greeter } from '../src/main';
+import { alertMessage, Options } from '../src/main';
 
-describe('greeter function', () => {
-  const name = 'John';
-  let hello: string;
 
-  let timeoutSpy: jest.SpyInstance;
+describe('alertMessage', () => {
+  const mockOutput = {
+    calls: [],
+    log: function (msg: string) {
+      mockOutput.calls.push(msg);
+    }
+  }
 
-  // Act before assertions
-  beforeAll(async () => {
-    // Read more about fake timers
-    // http://facebook.github.io/jest/docs/en/timer-mocks.html#content
-    // Jest 27 now uses "modern" implementation of fake timers
-    // https://jestjs.io/blog/2021/05/25/jest-27#flipping-defaults
-    // https://github.com/facebook/jest/pull/5171
-    jest.useFakeTimers();
-    timeoutSpy = jest.spyOn(global, 'setTimeout');
-
-    const p: Promise<string> = greeter(name);
-    jest.runOnlyPendingTimers();
-    hello = await p;
+  beforeEach(() => {
+    mockOutput.calls = [];
   });
 
-  // Teardown (cleanup) after assertions
-  afterAll(() => {
-    timeoutSpy.mockRestore();
+  const alertTest = (options: Options, expected: string[]) => {
+    alertMessage(options, mockOutput.log);
+    const output = mockOutput.calls[0];
+    expected.forEach((value) => {
+      expect(output).toContain(value);
+    });
+  };
+
+  it('logs default message', () => {
+    alertTest({ message: 'foo bar' }, ['foo bar', 'ERROR']);
   });
 
-  // Assert if setTimeout was called properly
-  it('delays the greeting by 2 seconds', () => {
-    expect(setTimeout).toHaveBeenCalledTimes(1);
-    expect(setTimeout).toHaveBeenLastCalledWith(
-      expect.any(Function),
-      Delays.Long,
-    );
+  it('logs SUCCESS', () => {
+    alertTest({ messageType: 'success', message: 'yes' }, ['yes', 'SUCCESS']);
   });
 
-  // Assert greeter result
-  it('greets a user with `Hello, {name}` message', () => {
-    expect(hello).toBe(`Hello, ${name}`);
+  it('logs INFO', () => {
+    alertTest({ messageType: 'info', message: 'some info' }, ['some info', 'INFO']);
   });
+
+  it('logs WARNING', () => {
+    alertTest({ messageType: 'warning', message: 'imwarningya' }, ['imwarningya', 'WARNING']);
+  });
+
+  it('logs ERROR', () => {
+    alertTest({ messageType: 'error', message: 'ohno' }, ['ohno', 'ERROR']);
+  });
+
+  it('logs custom prefix', () => {
+    alertTest({ messageType: 'info', message: 'custom info', label: '>>>x' }, ['custom info', '>>>x']);
+  });
+
 });
